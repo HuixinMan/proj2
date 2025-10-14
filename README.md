@@ -35,32 +35,29 @@ get.net <- function(beta, h, nc = 15) {
   links
 }
 
-
-
-
-#Establish an NSEIR model with social structure
+# Establish an NSEIR model with social structure
 nseir <- function(beta, h, alink,              
                   alpha = c(.1, .01, .01),     
                   delta = .2, gamma = .4,       
                   nc = 15, nt = 100, pinf = .005){
-# Obtain the total population n
+#Obtain the total population n
   n <- length(beta)                            
-# Establish the individual state vector x and initialize it
+#Establish the individual state vector x and initialize it
 x <- rep(0, n)            
-# Select the initial infected person randomly (with "2" state)
+#Select the initial infected person randomly (with "2" state)
 x[sample.int(n, max(1, round(n * pinf)))] <- 2
   
-  # Build the daily counters and initialize it: S(Susceptibility), E(Exposure), I(Infection), R(Recovery)
+  #Build the daily counters and initialize it: S(Susceptibility), E(Exposure), I(Infection), R(Recovery)
   S <- E <- I <- R <- rep(0, nt) 
-  # Total number of susceptible individuals on Day 1
+  #Total number of susceptible individuals on Day 1
   S[1] <- sum(x == 0)  
-  # Total number of infected people on Day 1
+  #Total number of infected people on Day 1
   I[1] <- sum(x == 2)                          
-  # Pre-build a family group list (raising efficiency)
+  #Pre-build a family group list (raising efficiency)
   hh <- split(seq_len(n), h)
-  # Calculate the average value of beta
+  #Calculate the average value of beta
   bbar <- mean(beta)   
-  # Calculate the normalization constant of random propagation
+  #Calculate the normalization constant of random propagation
   c_r <- alpha[3] * nc / (bbar^2 * (n - 1))   
   
   # Main cycle: From day 2 to day nt
@@ -104,7 +101,7 @@ x[sample.int(n, max(1, round(n * pinf)))] <- 2
         }
       }
       
-      # Social network spread
+  # Social network spread
       # If social network starts
       if (alpha[2] > 0) {  
         # Traverse each infected person i
@@ -120,7 +117,7 @@ x[sample.int(n, max(1, round(n * pinf)))] <- 2
         }
       }
       
-      # Random spread
+  # Random spread
       #If random spread starts
       if (alpha[3] > 0) {
         # Calculate the total social activity of all infected individuals
@@ -142,7 +139,7 @@ x[sample.int(n, max(1, round(n * pinf)))] <- 2
       x[toE & x == 0] <- 1                    
     }
     
-    #Record the number of people in each status on that day
+  # Record the number of people in each status on that day
     # Total susceptibles on day t
     S[t] <- sum(x == 0)
     # Total exposed on day t
