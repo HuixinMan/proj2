@@ -1,40 +1,48 @@
-# proj2
-## Practical 2: SEIR model with social structure
-# 随机生成个体的“家庭编号”向量 h，以模拟家庭聚集结构
+# Project 2: SEIR model with social structure
+# Group member: S2809410 Huixin Man, S, S
+# 
+# Randomly generate family IDs (h) to simulate household structure
 set.seed(123)
 hmax <- 5
 n <- 1000
-# 随机生成家庭规模（每个家庭的人数），总人数不超过n
+# Generate family sizes ~ U(1, hmax) ensuring total population ≤ n
 sizes <- sample(1:hmax, n, replace = TRUE)          
 sizes <- sizes[cumsum(sizes) <= n]                  
 sizes[length(sizes)] <- sizes[length(sizes)] + (n - sum(sizes))  
-h <- rep(seq_along(sizes), sizes)                   
+# Assign a family number to each individual based on family sizes
+h <- rep(seq_along(sizes), sizes)      
+# Disorder the sequence of family numbers, so that individuals are randomly distributed in the data.
 h <- sample(h)                                      
 length(h);
 
-#生成固定社交网络（排除家庭内链接）
 
+# get.nut function: return a list, the ith element of which is a vector of the indices of the regular (non-household) contacts of person i.
 get.net <- function(beta, h, nc = 15) {
   n <- length(beta)
   bbar <- mean(beta)
   const <- nc / (bbar^2 * (n - 1))
   links <- vector("list", n)
   for (i in 1:(n - 1)) {
+    # Potential contacts for person i, exclude individuals from the same family
     cand_j <- (i + 1):n
     cand_j <- cand_j[h[cand_j] != h[i]]
     if (length(cand_j) == 0) next
+    # Link probabilities proportional to contact propensities
     p <- const * beta[i] * beta[cand_j]
+    # Cap probabilities at 1
     p[p > 1] <- 1
+    # Randomly form links based on probability p
     chosen <- cand_j[runif(length(cand_j)) < p]
+    ## Add symmetric connections
     if (length(chosen)) {
       links[[i]] <- c(links[[i]], chosen)
       for (j in chosen) links[[j]] <- c(links[[j]], i)
     }
   }
+  #Remove duplicates and sort connections
   for (i in seq_len(n)) if (length(links[[i]]) > 1) links[[i]] <- sort(unique(links[[i]]))
   links
 }
-
 # Establish an NSEIR model with social structure
 nseir <- function(beta, h, alink,              
                   alpha = c(.1, .01, .01),     
