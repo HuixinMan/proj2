@@ -95,60 +95,80 @@ nseir <- function(beta, h, alink,
   list(S = S, E = E, I = I, R = R, t = 1:nt)
 }
 
-## -------------------------------------------------
-## 4. 绘图函数（包含 S、E、I、R 四条曲线）
-## -------------------------------------------------
+# Create a combined plot of all four state variables
+# Uses matplot to display S, E, I, R curves simultaneously
+# main: plot title
 plot_seir <- function(epi, main = "") {
   plot(epi$S,ylim=c(0,max(epi$S)),xlab="day",ylab="N",main=main)
   points(epi$E,col=4);points(epi$I,col=2);points(epi$R,col=3);
-  legend("topright", c("S","E","I","R"),
-         lty = 1, col = c(1,4,2,3), bty = "n", cex = .8,pch=1)
+  
+# Add legend to identify each curve
+legend("topright", c("S","E","I","R"),
+       lty = 1, col = c(1,4,2,3), bty = "n", cex = .8,pch=1)
 }
 
-
-
-
-## 5. 模拟与比较（四种情景）
-## -------------------------------------------------
+# Generate random beta values from U(0,1) distribution
 beta0 <- runif(n)
+
+# Create social network using random beta values
 alink <- get.net(beta0, h, 15)
 
-epi1 <- nseir(beta0, h, alink, alpha = c(.1,.01,.01))
-epi2 <- nseir(beta0, h, alink, alpha = c(0,0,.04))
-beta_bar <- rep(mean(beta0), n)
-alink_bar <- get.net(beta_bar, h, 15)
-epi3 <- nseir(beta_bar, h, alink_bar, alpha = c(.1,.01,.01))
-epi4 <- nseir(beta_bar, h, alink_bar, alpha = c(0,0,.04))
+# Scenario 1: Full model with default parameters
+# Random beta + household structure + social network + random mixing
+epi1 <- nseir(beta0, h, alink, alpha = c(.1, .01, .01))
 
-cat("生成比较图表...\n")
+# Scenario 2: Remove household and network structure, keep only random mixing
+# αh = αc = 0, αr = 0.04 
+epi2 <- nseir(beta0, h, alink, alpha = c(0, 0, .04))
+
+# Create constant beta vector (all elements equal to mean of random beta)
+beta_bar <- rep(mean(beta0), n)
+
+# Generate new social network using constant beta values
+alink_bar <- get.net(beta_bar, h, 15)
+
+# Scenario 3: Full model with constant beta
+# Constant beta + household structure + social network + random mixing
+epi3 <- nseir(beta_bar, h, alink_bar, alpha = c(.1, .01, .01))
+
+# Scenario 4: Constant beta with only random mixing
+# Constant beta + αh = αc = 0, αr = 0.04
+epi4 <- nseir(beta_bar, h, alink_bar, alpha = c(0, 0, .04))
+
+
+# Set up 2x2 plot layout with adjusted margins
 par(mfrow = c(2, 2), mar = c(4, 4, 3, 1))
+
+# Plot all four scenarios for comparison
 plot_seir(epi1, "Full model\nRandom beta + Social structure")
 plot_seir(epi2, "Random mixing only\nαh=αc=0, αr=0.04")
 plot_seir(epi3, "Full structure\nConstant beta")
 plot_seir(epi4, "Random mixing + Constant beta\nαh=αc=0, αr=0.04")
 
-cat("\n=== 结果分析和评论 ===\n")
-
-# 计算最终感染比例和峰值感染者数量
+# Results analysis and commentary
+# Function to calculate final infected proportion (R + I at end)
 final_infected <- function(epi) {
   last <- length(epi$R)
   (epi$R[last] + epi$I[last]) / n
 }
 
+# Function to calculate peak infected proportion (maximum I during simulation)
 peak_infected <- function(epi) {
   max(epi$I) / n
 }
 
+# Calculate metrics for all four scenarios
 inf1 <- final_infected(epi1); peak1 <- peak_infected(epi1)
 inf2 <- final_infected(epi2); peak2 <- peak_infected(epi2)
 inf3 <- final_infected(epi3); peak3 <- peak_infected(epi3)
 inf4 <- final_infected(epi4); peak4 <- peak_infected(epi4)
 
-cat("最终感染比例和峰值感染者比例:\n")
-cat(sprintf("情景1 (完整模型): 最终%.1f%%, 峰值%.1f%%\n", inf1 * 100, peak1 * 100))
-cat(sprintf("情景2 (仅随机混合): 最终%.1f%%, 峰值%.1f%%\n", inf2 * 100, peak2 * 100))
-cat(sprintf("情景3 (完整结构+常数beta): 最终%.1f%%, 峰值%.1f%%\n", inf3 * 100, peak3 * 100))
-cat(sprintf("情景4 (常数beta+仅随机混合): 最终%.1f%%, 峰值%.1f%%\n", inf4 * 100, peak4 * 100))
+cat("Final infected proportion and peak infected proportion:\n")
+cat(sprintf("Scenario 1 (Full model): Final %.1f%%, Peak %.1f%%\n", inf1 * 100, peak1 * 100))
+cat(sprintf("Scenario 2 (Random mixing only): Final %.1f%%, Peak %.1f%%\n", inf2 * 100, peak2 * 100))
+cat(sprintf("Scenario 3 (Full structure + constant beta): Final %.1f%%, Peak %.1f%%\n", inf3 * 100, peak3 * 100))
+cat(sprintf("Scenario 4 (Random mixing + constant beta): Final %.1f%%, Peak %.1f%%\n", inf4 * 100, peak4 * 100))
+
 
 cat("\n家庭和网络结构相对于随机混合的明显影响:\n")
 # 比较情景1和情景2：社会结构的影响
