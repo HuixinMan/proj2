@@ -172,7 +172,7 @@ plot_seir <- function(epi, main = "") {
   points(epi$E,col=4);points(epi$I,col=2);points(epi$R,col=3);
   
 # Add legend to identify each curve
-legend("topright", c("S","E","I","R"),
+legend("right", c("S","E","I","R"),
        lty = 1, col = c(1,4,2,3), bty = "n", cex = .8,pch=1)
 }
 
