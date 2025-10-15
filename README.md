@@ -50,35 +50,28 @@ nseir <- function(beta, h, alink,
                   alpha = c(.1, .01, .01),     
                   delta = .2, gamma = .4,       
                   nc = 15, nt = 100, pinf = .005){
-#Obtain the total population n
   n <- length(beta)                            
-#Establish the individual state vector x and initialize it
 x <- rep(0, n)            
 #Select the initial infected person randomly (with "2" state)
 x[sample.int(n, max(1, round(n * pinf)))] <- 2
   
-  #Build the daily counters and initialize it: S(Susceptibility), E(Exposure), I(Infection), R(Recovery)
+  #Build the daily counters and initialize it
   S <- E <- I <- R <- rep(0, nt) 
-  #Total number of susceptible individuals on Day 1
+  #Total number of susceptible，infected individuals on Day 1
   S[1] <- sum(x == 0)  
-  #Total number of infected people on Day 1
   I[1] <- sum(x == 2)                          
   #Pre-build a family group list (raising efficiency)
   hh <- split(seq_len(n), h)
-  #Calculate the average value of beta
   bbar <- mean(beta)   
   #Calculate the normalization constant of random propagation
   c_r <- alpha[3] * nc / (bbar^2 * (n - 1))   
   
   # Main cycle: From day 2 to day nt
   for (t in 2:nt) {                            
-    # Find the index of all current infected individuals (2 status)
     idxI <- which(x == 2)   
-    # If there are infected individuals
     if (length(idxI)) 
       # Convert the infected individuals to recovered patients with probability delta (3 status)
       x[idxI[runif(length(idxI)) < delta]] <- 3  
-    # Find the index of all current exposed individuals (1 status)
     idxE <- which(x == 1)    
     #If there are exposed individuals
     if (length(idxE))         
@@ -94,9 +87,7 @@ x[sample.int(n, max(1, round(n * pinf)))] <- 2
       toE <- rep(FALSE, n)                    
       
 # Family spread  
-      #If family communication starts
       if (alpha[1] > 0) {    
-        # Traverse each infected person i
         for (i in idxI) {    
           # Get the list of members of the i's family
           mem <- hh[[h[i]]]   
@@ -104,7 +95,6 @@ x[sample.int(n, max(1, round(n * pinf)))] <- 2
           mem <- mem[mem != i]           
           # Screening: Those who are susceptible and have not been marked by other transmission routes
           mem <- mem[x[mem] == 0 & !toE[mem]]  
-          # If there are eligible family members
           if (length(mem))  
           # Mark it as being infected with the probability alpha[1]
             toE[mem[runif(length(mem)) < alpha[1]]] <- TRUE  
@@ -112,27 +102,22 @@ x[sample.int(n, max(1, round(n * pinf)))] <- 2
       }
       
   # Social network spread
-      # If social network starts
       if (alpha[2] > 0) {  
-        # Traverse each infected person i
         for (i in idxI) {       
           # Get i's list of social network friends
           nbr <- alink[[i]]   
           # Screening: Susceptible individuals & Not marked by other transmission routes
           nbr <- nbr[x[nbr] == 0 & !toE[nbr]] 
-          # If have qualified network friends
           if (length(nbr))       
-            # Mark it as being infected with the probability alpha[2]
+            # Mark qualified network friends as being infected with the probability alpha[2]
             toE[nbr[runif(length(nbr)) < alpha[2]]] <- TRUE  
         }
       }
       
   # Random spread
-      #If random spread starts
       if (alpha[3] > 0) {
         # Calculate the total social activity of all infected individuals
         BI <- sum(beta[idxI])      
-        # If there are infected people
         if (BI > 0) {       
           # Identify susceptible individuals who have not been marked by other pathways
           Sfree <- idxS[!toE[idxS]]   
@@ -150,13 +135,10 @@ x[sample.int(n, max(1, round(n * pinf)))] <- 2
     }
     
   # Record the number of people in each status on that day
-    # Total susceptibles on day t
+ 
     S[t] <- sum(x == 0)
-    # Total exposed on day t
     E[t] <- sum(x == 1)   
-    # Total infected on day t
     I[t] <- sum(x == 2) 
-    # Total recovered on day t
     R[t] <- sum(x == 3)                        
   }
   
