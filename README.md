@@ -18,7 +18,7 @@ h <- sample(h)
 length(h);
 
 
-# get.nut function: return a list, the ith element of which is a vector of the indices of the regular (non-household) contacts of person i.
+# get.net function: return a list, the ith element of which is a vector of the indices of the regular (non-household) contacts of person i.
 get.net <- function(beta, h, nc = 15) {
   n <- length(beta)
   bbar <- mean(beta)
