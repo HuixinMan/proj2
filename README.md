@@ -1,7 +1,7 @@
 # Project 2: SEIR model with social structure
 # Group member: S2809410 Huixin Man, S2793485 Ruoxi Wang, S2829716 Leying Wang
 # The contribution ratio of Huixin, Ruoxi and Leying are 32%, 34% and 34%.
-# Github Link:
+# Github Link: https://github.com/HuixinMan/proj2
 
 # Randomly generate family IDs (h) to simulate household structure
 set.seed(123)
