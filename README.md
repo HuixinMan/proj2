@@ -1,6 +1,8 @@
 # Project 2: SEIR model with social structure
-# Group member: S2809410 Huixin Man, S, S
-# 
+# Group member: S2809410 Huixin Man, S2793485 Ruoxi Wang, S2829716 Leying Wang
+# The contribution ratio of Huixin, Ruoxi and Leying are 32%, 34% and 34%.
+# Github Link:
+
 # Randomly generate family IDs (h) to simulate household structure
 set.seed(123)
 hmax <- 5
@@ -207,10 +209,10 @@ epi4 <- nseir(beta_bar, h, alink_bar, alpha = c(0, 0, .04))
 par(mfrow = c(2, 2), mar = c(4, 4, 3, 1))
 
 # Plot all four scenarios for comparison
-plot_seir(epi1, "Full model\nRandom beta + Social structure")
-plot_seir(epi2, "Random mixing only\nαh=αc=0, αr=0.04")
-plot_seir(epi3, "Full structure\nConstant beta")
-plot_seir(epi4, "Random mixing + Constant beta\nαh=αc=0, αr=0.04")
+plot_seir(epi1, "Full model\nDefault parameters")
+plot_seir(epi2, "Random mixing\nαh=αc=0, αr=0.04")
+plot_seir(epi3, "Full model\nConstant β")
+plot_seir(epi4, "Random mixing + Constant β\nαh=αc=0, αr=0.04")
 
 # Results analysis and commentary
 # Function to calculate final infected proportion (R + I at end)
@@ -230,34 +232,27 @@ inf2 <- final_infected(epi2); peak2 <- peak_infected(epi2)
 inf3 <- final_infected(epi3); peak3 <- peak_infected(epi3)
 inf4 <- final_infected(epi4); peak4 <- peak_infected(epi4)
 
+# Output the result
 cat("Final infected proportion and peak infected proportion:\n")
 cat(sprintf("Scenario 1 (Full model): Final %.1f%%, Peak %.1f%%\n", inf1 * 100, peak1 * 100))
 cat(sprintf("Scenario 2 (Random mixing only): Final %.1f%%, Peak %.1f%%\n", inf2 * 100, peak2 * 100))
-cat(sprintf("Scenario 3 (Full structure + constant beta): Final %.1f%%, Peak %.1f%%\n", inf3 * 100, peak3 * 100))
-cat(sprintf("Scenario 4 (Random mixing + constant beta): Final %.1f%%, Peak %.1f%%\n", inf4 * 100, peak4 * 100))
+cat(sprintf("Scenario 3 (Full model + constant β): Final %.1f%%, Peak %.1f%%\n", inf3 * 100, peak3 * 100))
+cat(sprintf("Scenario 4 (Random mixing + constant β): Final %.1f%%, Peak %.1f%%\n", inf4 * 100, peak4 * 100))
+
+# Comparing Scenarios 1 and 2, the peaks of E and I occur later in Scenario 1, 
+# and the peak proportion of infectious individuals is smaller than in Scenario 2. 
+# This indicates that the presence of fixed household and network structure slightly slows down the epidemic spread.
+
+# Comparing Scenarios 1 and 3, the peak and final proportion of infectious individuals in Scenario 1 
+# are both lower than in Scenario 3, suggesting that variability in β weakens the epidemic peak 
+# and substantially reduces the overall epidemic size.
+
+# Comparing Scenarios 2 and 4, the final proportion infected in Scenario 2 is lower than in Scenario 4, 
+# consistent with the finding that β variability reduces the total epidemic size, 
+# while the peak infection proportions are similar in both scenarios.
+
+# Above all, fixed social structure leads to a slower and flatter epidemic curve, 
+# whereas individual variability in β results in a weaker and more limited epidemic spread.
 
 
-cat("\n家庭和网络结构相对于随机混合的明显影响:\n")
-# 比较情景1和情景2：社会结构的影响
-if (peak1 < peak2) {
-  cat("1. 社会结构减缓了传播速度: 完整模型(情景1)的峰值感染者比例(", round(peak1 * 100, 1), 
-      "%)低于随机混合(情景2)的", round(peak2 * 100, 1), "%，表明家庭和网络结构延缓了疫情高峰的到来。\n")
-} else {
-  cat("1. 社会结构加速了局部传播: 在某些参数下，社会结构可能导致更快的局部传播。\n")
-}
 
-# 比较情景1和情景3：beta变异性的影响
-if (inf1 > inf3) {
-  cat("2. beta变异性增加了传播风险: 随机beta(情景1)的最终感染规模(", round(inf1 * 100, 1),
-      "%)高于常数beta(情景3)的", round(inf3 * 100, 1), "%，表明社交活跃度的差异促进了超级传播事件。\n")
-} else {
-  cat("2. beta变异性对最终规模影响有限: 两种情景的最终感染规模相似。\n")
-}
-
-# 比较情景2和情景4：随机混合下beta变异性的影响
-if (inf2 != inf4) {
-  cat("3. 在随机混合中，beta变异性", ifelse(inf2 > inf4, "增加", "减少"), 
-      "了最终感染规模，从", round(inf4 * 100, 1), "%变为", round(inf2 * 100, 1), "%。\n")
-} else {
-  cat("3. 在随机混合中，beta变异性对最终感染规模影响较小。\n")
-}
