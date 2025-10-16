@@ -70,16 +70,16 @@ x[sample.int(n, max(1, round(n * pinf)))] <- 2
   for (t in 2:nt) {                            
     idxI <- which(x == 2)   
     if (length(idxI)) 
-      # Convert the infected individuals to recovered patients with probability delta (3 status)
+      # Convert the infected individuals to recovered patients
       x[idxI[runif(length(idxI)) < delta]] <- 3  
     idxE <- which(x == 1)    
     #If there are exposed individuals
     if (length(idxE))         
-      # Convert the exposed individuals to infected individuals using probability gamma (2 status)
+      # Convert the exposed individuals to infected individuals using probability gamma
       x[idxE[runif(length(idxE)) < gamma]] <- 2  
     # Update the index of Infected individuals
     idxI <- which(x == 2)      
-    # Find the index of all current susceptible individuals (status =0)
+    # Find the index of all current susceptible individuals
     idxS <- which(x == 0)                    
     # If there are both infected people and susceptible individuals
     if (length(idxI) && length(idxS)) {  
